@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ComplianceReader - Document Compliance Tracking</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 4rem;
+      padding-top: 2rem;
+    }
+    
+    h1 {
+      font-size: 56px;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .tagline {
+      font-size: 24px;
+      opacity: 0.95;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.85;
+    }
+    
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    }
+    
+    .card-icon {
+      font-size: 48px;
+      margin-bottom: 1rem;
+    }
+    
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 0.75rem;
+    }
+    
+    .card-desc {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    
+    .card-action {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    
+    .card:hover .card-action {
+      background: #5568d3;
+    }
+    
+    .card.primary {
+      grid-column: span 2;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .card.primary .card-title,
+    .card.primary .card-desc {
+      color: white;
+    }
+    
+    .card.primary .card-action {
+      background: white;
+      color: #667eea;
+    }
+    
+    .card.primary:hover .card-action {
+      background: #f0f0f0;
+    }
+    
+    .features {
+      background: white;
+      border-radius: 16px;
+      padding: 3rem;
+      margin-bottom: 3rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .features h2 {
+      font-size: 32px;
+      color: #1a1a1a;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+    
+    .feature {
+      text-align: center;
+    }
+    
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
+    
+    footer {
+      text-align: center;
+      color: white;
+      opacity: 0.8;
+      padding: 2rem 0;
+      font-size: 14px;
+    }
+    
+    @media (max-width: 768px) {
+      h1 { font-size: 36px; }
+      .tagline { font-size: 18px; }
+      .subtitle { font-size: 15px; }
+      .card.primary { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📚 ComplianceReader</h1>
+      <p class="tagline">Document Compliance Tracking for Modern Teams</p>
+      <p class="subtitle">Track who reads what, when, and for how long</p>
+    </header>
+    
+    <div class="cards">
+      <a href="dashboard.html" class="card primary">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Analytics Dashboard</div>
+        <div class="card-desc">View completion rates, reading time, and compliance reports. See who's read what and export audit trails.</div>
+        <div class="card-action">View Dashboard →</div>
+      </a>
+      
+      <a href="upload.html" class="card">
+        <div class="card-icon">📤</div>
+        <div class="card-title">Upload Documents</div>
+        <div class="card-desc">Add compliance documents with external URLs. BYOS architecture - your files stay in your storage.</div>
+        <div class="card-action">Upload Document →</div>
+      </a>
+      
+      <a href="assign.html" class="card">
+        <div class="card-icon">✉️</div>
+        <div class="card-title">Assign Documents</div>
+        <div class="card-desc">Assign documents to employees with deadlines. Track progress and send automated reminders.</div>
+        <div class="card-action">Assign Documents →</div>
+      </a>
+    </div>
+    
+    <div class="features">
+      <h2>Why ComplianceReader?</h2>
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-title">Page-Level Tracking</div>
+          <div class="feature-text">Know exactly which pages were read and for how long</div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">⏱️</div>
+          <div class="feature-title">Time Analytics</div>
+          <div class="feature-text">Track total reading time with pause detection</div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🏆</div>
+          <div class="feature-title">Completion Certificates</div>
+          <div class="feature-text">Auto-generate compliance certificates with verification</div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-title">Fraud Detection</div>
+          <div class="feature-text">Catch auto-scroll and impossible reading speeds</div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">☁️</div>
+          <div class="feature-title">BYOS Architecture</div>
+          <div class="feature-text">Documents stay in your S3/Azure/GDrive</div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">📈</div>
+          <div class="feature-title">Export Reports</div>
+          <div class="feature-text">CSV exports for audits and compliance reviews</div>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      <p>ComplianceReader - Enterprise Document Compliance Tracking</p>
+      <p style="margin-top: 0.5rem;">Built with Supabase • Deployed on Vercel</p>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ComplianceReader - Document Viewer</title>
+  <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" name="viewport"/>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Professional document compliance tracking">
+  <meta name="theme-color" content="#0066cc">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ComplianceReader">
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700" rel="stylesheet"/>
+  
+  <style>
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { 
+      background:#fafafa; 
+      color:#333; 
+      font-family:'Inter',system-ui,sans-serif; 
+      line-height:1.6; 
+      overflow-x: hidden;
+    }
+
+    .material-symbols-outlined {
+      font-family:'Material Symbols Outlined';
+      font-variation-settings:'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size:24px; 
+      color:#555;
+    }
+
+    /* Toolbar */
+    #toolbar {
+      position: fixed;
+      top: env(safe-area-inset-top, 0);
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: #fff;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    body { 
+      padding-top: calc(56px + env(safe-area-inset-top, 0)); 
+    }
+
+    #doc-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #1a1a1a;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #progress-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    #progress-bar-wrapper {
+      width: 120px;
+      height: 6px;
+      background: #e0e0e0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    #progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #0066cc, #0052a3);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    #progress-text {
+      font-variant-numeric: tabular-nums;
+      min-width: 45px;
+      text-align: right;
+    }
+
+    /* Reader Content */
+    #reader {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1a1a1a;
+    }
+    
+    #reader h1, #reader h2, #reader h3 {
+      margin-top: 32px;
+      margin-bottom: 16px;
+      line-height: 1.3;
+      color: #000;
+    }
+    
+    #reader h1 { font-size: 28px; font-weight: 700; }
+    #reader h2 { font-size: 22px; font-weight: 600; }
+    #reader h3 { font-size: 18px; font-weight: 600; }
+    
+    #reader p {
+      margin-bottom: 16px;
+    }
+    
+    #reader ul, #reader ol {
+      margin-left: 24px;
+      margin-bottom: 16px;
+    }
+    
+    #reader li {
+      margin-bottom: 8px;
+    }
+
+    /* Analytics Banner */
+    #analytics-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #666;
+      z-index: 999;
+    }
+    
+    #time-spent {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .analytics-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #27c93f;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Status indicator */
+    #status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 10px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    
+    #status.syncing {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    /* Loading state */
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #666;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #0066cc;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Completion Modal */
+    #completion-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    #completion-modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .modal-content .icon {
+      font-size: 64px;
+      color: #27c93f;
+      margin-bottom: 16px;
+    }
+    
+    .modal-content h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+    }
+    
+    .modal-content p {
+      color: #666;
+      margin-bottom: 24px;
+    }
+    
+    .modal-content button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .modal-content button:hover {
+      background: #0052a3;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      #reader {
+        padding: 24px 16px 60px;
+        font-size: 15px;
+      }
+      
+      #progress-bar-wrapper {
+        width: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div id="toolbar">
+  <div id="doc-title">Loading document...</div>
+  <div id="progress-container">
+    <div id="progress-bar-wrapper">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="progress-text">0%</div>
+  </div>
+</div>
+
+<!-- Reader Content -->
+<div id="reader">
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Loading document...</p>
+  </div>
+</div>
+
+<!-- Analytics Banner -->
+<div id="analytics-banner">
+  <div id="time-spent">
+    <span class="analytics-dot"></span>
+    <span>Time: <strong id="time-display">0:00</strong></span>
+  </div>
+  <div id="status">
+    <span class="material-symbols-outlined" style="font-size:16px">cloud_sync</span>
+    <span id="status-text">Syncing</span>
+  </div>
+</div>
+
+<!-- Completion Modal -->
+<div id="completion-modal">
+  <div class="modal-content">
+    <div class="material-symbols-outlined icon">task_alt</div>
+    <h2>Document Complete!</h2>
+    <p>You've reached the end of this document. Your completion has been recorded.</p>
+    <button onclick="closeCompletionModal()">Got it</button>
+  </div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+// Replace with your Supabase credentials
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+// Get document info from URL parameters
+const params = new URLSearchParams(window.location.search);
+const DOCUMENT_ID = params.get('doc') || 'demo-doc';
+const USER_ID = params.get('user') || 'demo-user';
+
+// ============================================================================
+// SUPABASE SETUP
+// ============================================================================
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ============================================================================
+// STATE MANAGEMENT
+// ============================================================================
+
+let startTime = Date.now();
+let totalTimeSeconds = 0;
+let isComplete = false;
+let maxScrollReached = 0;
+let lastAnalyticsSave = 0;
+
+// Throttling
+const SAVE_INTERVAL = 5000; // Save analytics every 5 seconds
+const COMPLETION_THRESHOLD = 0.95; // 95% scroll = complete
+
+// ============================================================================
+// ANALYTICS FUNCTIONS
+// ============================================================================
+
+async function saveAnalytics(scrollPercent) {
+  const now = Date.now();
+  
+  // Throttle saves
+  if (now - lastAnalyticsSave < SAVE_INTERVAL) return;
+  lastAnalyticsSave = now;
+  
+  const currentTimeSeconds = Math.floor((now - startTime) / 1000);
+  
+  try {
+    // Update document_sessions
+    const { error: sessionError } = await supabase
+      .from('document_sessions')
+      .upsert({
+        user_id: USER_ID,
+        document_id: DOCUMENT_ID,
+        last_scroll_position: scrollPercent,
+        total_time_seconds: currentTimeSeconds,
+        completed: scrollPercent >= COMPLETION_THRESHOLD,
+        last_active_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,document_id'
+      });
+    
+    if (sessionError) throw sessionError;
+    
+    // Log scroll event
+    const { error: eventError } = await supabase
+      .from('reading_events')
+      .insert({
+        user_id: USER_ID,
+        document_id: DOCUMENT_ID,
+        event_type: 'scroll',
+        scroll_position: scrollPercent,
+        time_spent_seconds: currentTimeSeconds
+      });
+    
+    if (eventError) throw eventError;
+    
+    updateStatus('Saved', false);
+    
+    console.log(`📊 Analytics saved: ${scrollPercent.toFixed(1)}%, ${currentTimeSeconds}s`);
+    
+  } catch (error) {
+    console.error('Analytics save error:', error);
+    updateStatus('Error', true);
+  }
+}
+
+async function markComplete() {
+  if (isComplete) return;
+  isComplete = true;
+  
+  const totalSeconds = Math.floor((Date.now() - startTime) / 1000);
+  
+  try {
+    const { error } = await supabase
+      .from('document_sessions')
+      .upsert({
+        user_id: USER_ID,
+        document_id: DOCUMENT_ID,
+        last_scroll_position: 1.0,
+        total_time_seconds: totalSeconds,
+        completed: true,
+        completed_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,document_id'
+      });
+    
+    if (error) throw error;
+    
+    // Log completion event
+    await supabase
+      .from('reading_events')
+      .insert({
+        user_id: USER_ID,
+        document_id: DOCUMENT_ID,
+        event_type: 'completion',
+        scroll_position: 1.0,
+        time_spent_seconds: totalSeconds
+      });
+    
+    showCompletionModal();
+    console.log('✅ Document marked complete');
+    
+  } catch (error) {
+    console.error('Completion save error:', error);
+  }
+}
+
+// ============================================================================
+// SCROLL TRACKING
+// ============================================================================
+
+function updateProgress() {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollPercent = scrollHeight > 0 ? Math.min(1, scrollTop / scrollHeight) : 0;
+  
+  // Update UI
+  document.getElementById('progress-bar').style.width = `${scrollPercent * 100}%`;
+  document.getElementById('progress-text').textContent = `${Math.round(scrollPercent * 100)}%`;
+  
+  // Track max scroll
+  if (scrollPercent > maxScrollReached) {
+    maxScrollReached = scrollPercent;
+    
+    // Save analytics
+    saveAnalytics(scrollPercent);
+    
+    // Check for completion
+    if (scrollPercent >= COMPLETION_THRESHOLD && !isComplete) {
+      markComplete();
+    }
+  }
+}
+
+// Smooth scroll tracking with throttling
+let scrollTimeout;
+window.addEventListener('scroll', () => {
+  updateStatus('Syncing', true);
+  
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    updateProgress();
+  }, 100);
+}, { passive: true });
+
+// ============================================================================
+// TIME TRACKING
+// ============================================================================
+
+function updateTimeDisplay() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+  document.getElementById('time-display').textContent = 
+    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+setInterval(updateTimeDisplay, 1000);
+
+// ============================================================================
+// STATUS INDICATOR
+// ============================================================================
+
+function updateStatus(text, syncing) {
+  const status = document.getElementById('status');
+  const statusText = document.getElementById('status-text');
+  
+  statusText.textContent = text;
+  
+  if (syncing) {
+    status.classList.add('syncing');
+  } else {
+    status.classList.remove('syncing');
+  }
+}
+
+// ============================================================================
+// COMPLETION MODAL
+// ============================================================================
+
+function showCompletionModal() {
+  document.getElementById('completion-modal').classList.add('active');
+}
+
+function closeCompletionModal() {
+  document.getElementById('completion-modal').classList.remove('active');
+}
+
+// ============================================================================
+// DOCUMENT LOADING
+// ============================================================================
+
+async function loadDocument() {
+  try {
+    updateStatus('Loading', true);
+    
+    // Fetch document from Supabase
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('id', DOCUMENT_ID)
+      .single();
+    
+    if (error) throw error;
+    
+    // Update title
+    document.getElementById('doc-title').textContent = data.title;
+    document.title = `${data.title} - ComplianceReader`;
+    
+    // Load document content
+    // In production, this would fetch from external_url or storage
+    // For demo, we'll use sample content
+    const reader = document.getElementById('reader');
+    reader.innerHTML = `
+      <h1>${data.title}</h1>
+      <p><em>Document ID: ${DOCUMENT_ID}</em></p>
+      
+      <h2>Introduction</h2>
+      <p>This is a compliance document that tracks your reading progress. As you scroll, your position is automatically saved and your reading time is tracked.</p>
+      
+      <h2>Key Features</h2>
+      <ul>
+        <li><strong>Real-time tracking</strong> - Your progress is saved every 5 seconds</li>
+        <li><strong>Time monitoring</strong> - See how long you've been reading</li>
+        <li><strong>Completion detection</strong> - Automatically marks complete at 95% scroll</li>
+        <li><strong>Mobile optimized</strong> - Works great on any device</li>
+      </ul>
+      
+      <h2>Section 1: Getting Started</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      
+      <h3>1.1 First Steps</h3>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      
+      <h3>1.2 Important Notes</h3>
+      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+      
+      <h2>Section 2: Core Content</h2>
+      <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+      
+      <h3>2.1 Main Points</h3>
+      <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+      
+      <ol>
+        <li>First important point to remember</li>
+        <li>Second critical consideration</li>
+        <li>Third essential element</li>
+        <li>Fourth key principle</li>
+      </ol>
+      
+      <h3>2.2 Additional Details</h3>
+      <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.</p>
+      
+      <h2>Section 3: Advanced Topics</h2>
+      <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.</p>
+      
+      <h3>3.1 Complex Scenarios</h3>
+      <p>Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus.</p>
+      
+      <h3>3.2 Edge Cases</h3>
+      <p>Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus.</p>
+      
+      <h2>Section 4: Best Practices</h2>
+      <p>Ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      
+      <h3>4.1 Recommendations</h3>
+      <ul>
+        <li>Follow these guidelines carefully</li>
+        <li>Review the documentation regularly</li>
+        <li>Ask questions when unclear</li>
+        <li>Document your understanding</li>
+      </ul>
+      
+      <h3>4.2 Common Mistakes</h3>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+      
+      <h2>Conclusion</h2>
+      <p>This document has covered all the essential information. Make sure you've read and understood all sections. Your completion will be automatically recorded when you reach the end.</p>
+      
+      <p><strong>Thank you for reading!</strong></p>
+      
+      <p style="margin-top: 60px; padding: 20px; background: #f0f0f0; border-radius: 8px; text-align: center;">
+        <em>Scroll to the very bottom to trigger completion tracking</em>
+      </p>
+    `;
+    
+    // Load previous session if exists
+    const { data: session } = await supabase
+      .from('document_sessions')
+      .select('*')
+      .eq('user_id', USER_ID)
+      .eq('document_id', DOCUMENT_ID)
+      .single();
+    
+    if (session) {
+      // Resume from last position
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const resumePosition = session.last_scroll_position * scrollHeight;
+      
+      window.scrollTo({ top: resumePosition, behavior: 'smooth' });
+      
+      // Update state
+      maxScrollReached = session.last_scroll_position;
+      isComplete = session.completed || false;
+      
+      console.log(`📖 Resumed from ${(session.last_scroll_position * 100).toFixed(1)}%`);
+    }
+    
+    updateStatus('Ready', false);
+    updateProgress();
+    
+  } catch (error) {
+    console.error('Document load error:', error);
+    document.getElementById('reader').innerHTML = `
+      <div style="text-align:center; padding: 60px 20px; color: #666;">
+        <h2>Error Loading Document</h2>
+        <p>${error.message}</p>
+      </div>
+    `;
+    updateStatus('Error', false);
+  }
+}
+
+// ============================================================================
+// PAGE VISIBILITY (pause tracking when tab hidden)
+// ============================================================================
+
+let wasVisible = true;
+let hiddenTime = 0;
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // Tab hidden
+    hiddenTime = Date.now();
+    wasVisible = false;
+    console.log('⏸️  Tab hidden - pausing time tracking');
+  } else {
+    // Tab visible again
+    if (!wasVisible) {
+      // Adjust start time to exclude hidden time
+      const hiddenDuration = Date.now() - hiddenTime;
+      startTime += hiddenDuration;
+      wasVisible = true;
+      console.log('▶️  Tab visible - resuming time tracking');
+    }
+  }
+});
+
+// ============================================================================
+// SAVE ON PAGE UNLOAD
+// ============================================================================
+
+window.addEventListener('beforeunload', () => {
+  // Force save current state
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollPercent = scrollHeight > 0 ? Math.min(1, scrollTop / scrollHeight) : 0;
+  
+  navigator.sendBeacon(`${SUPABASE_URL}/rest/v1/document_sessions`, JSON.stringify({
+    user_id: USER_ID,
+    document_id: DOCUMENT_ID,
+    last_scroll_position: scrollPercent,
+    total_time_seconds: Math.floor((Date.now() - startTime) / 1000),
+    completed: isComplete,
+    last_active_at: new Date().toISOString()
+  }));
+});
+
+// ============================================================================
+// INITIALIZE
+// ============================================================================
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadDocument();
+  console.log('🚀 ComplianceReader initialized');
+  console.log(`📄 Document: ${DOCUMENT_ID}`);
+  console.log(`👤 User: ${USER_ID}`);
+});
+</script>
+
+</body>
+</html>

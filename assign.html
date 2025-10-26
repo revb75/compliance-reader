@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assign Document - ComplianceReader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 32px;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: #666;
+      font-size: 15px;
+    }
+    
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 14px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+    }
+    
+    .help-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+    
+    .user-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    
+    .user-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    
+    .user-item:hover {
+      background: #f5f7fa;
+    }
+    
+    .user-item input[type="checkbox"] {
+      width: auto;
+    }
+    
+    .user-info {
+      flex: 1;
+    }
+    
+    .user-name {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    
+    .user-email {
+      font-size: 13px;
+      color: #666;
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .btn:hover {
+      background: #5568d3;
+    }
+    
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+      margin-right: 1rem;
+    }
+    
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      display: block;
+    }
+    
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+      display: block;
+    }
+    
+    .back-link {
+      display: inline-block;
+      color: #667eea;
+      text-decoration: none;
+      margin-bottom: 1rem;
+      font-size: 14px;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .select-all {
+      padding: 0.5rem;
+      background: #f5f7fa;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <div class="header">
+      <h1>✉️ Assign Document</h1>
+      <p class="subtitle">Assign a compliance document to employees with requirements and deadlines</p>
+    </div>
+    
+    <div id="status" class="status"></div>
+    
+    <div class="card">
+      <form id="assignForm">
+        <div class="form-group">
+          <label for="document">Document *</label>
+          <select id="document" required>
+            <option value="">Loading documents...</option>
+          </select>
+          <p class="help-text">Select the document to assign</p>
+        </div>
+        
+        <div class="form-group">
+          <label>Assign To *</label>
+          <div id="usersLoading" class="loading">Loading users...</div>
+          <div id="usersList" class="user-list" style="display:none;">
+            <div class="select-all">
+              <input type="checkbox" id="selectAll">
+              <label for="selectAll" style="margin:0;">Select All</label>
+            </div>
+            <div id="usersContainer"></div>
+          </div>
+          <p class="help-text">Select one or more employees</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="dueDate">Due Date</label>
+          <input type="date" id="dueDate">
+          <p class="help-text">Optional deadline for completion</p>
+        </div>
+        
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="isMandatory" checked>
+            <label for="isMandatory" style="margin:0;">Mandatory Reading</label>
+          </div>
+          <p class="help-text">If checked, employees must complete this document</p>
+        </div>
+        
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="requiresSignature">
+            <label for="requiresSignature" style="margin:0;">Requires Digital Signature</label>
+          </div>
+          <p class="help-text">Employees must sign after reading</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="notes">Notes for Employees</label>
+          <textarea id="notes" rows="3" placeholder="Optional instructions or context for this assignment"></textarea>
+        </div>
+        
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" onclick="window.location='dashboard.html'">Cancel</button>
+          <button type="submit" class="btn" id="submitBtn">Assign Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ========================================
+    // CONFIGURATION
+    // ========================================
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let selectedUsers = new Set();
+    
+    // ========================================
+    // LOAD DATA
+    // ========================================
+    async function loadDocuments() {
+      try {
+        const { data: documents, error } = await supabase
+          .from('documents')
+          .select('id, title, slug')
+          .eq('status', 'active')
+          .order('title');
+        
+        if (error) throw error;
+        
+        const select = document.getElementById('document');
+        select.innerHTML = '<option value="">Select a document...</option>';
+        
+        documents.forEach(doc => {
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.title;
+          select.appendChild(option);
+        });
+        
+        // Pre-select if doc ID in URL
+        const params = new URLSearchParams(window.location.search);
+        const docId = params.get('doc');
+        if (docId) {
+          select.value = docId;
+        }
+        
+      } catch (error) {
+        console.error('Load documents error:', error);
+      }
+    }
+    
+    async function loadUsers() {
+      try {
+        const { data: users, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, department, user_type')
+          .eq('is_active', true)
+          .eq('user_type', 'employee')
+          .order('full_name');
+        
+        if (error) throw error;
+        
+        document.getElementById('usersLoading').style.display = 'none';
+        document.getElementById('usersList').style.display = 'block';
+        
+        const container = document.getElementById('usersContainer');
+        container.innerHTML = '';
+        
+        users.forEach(user => {
+          const div = document.createElement('div');
+          div.className = 'user-item';
+          div.innerHTML = `
+            <input type="checkbox" id="user-${user.id}" value="${user.id}">
+            <label for="user-${user.id}" class="user-info" style="cursor:pointer;">
+              <div class="user-name">${user.full_name || 'Unnamed User'}</div>
+              <div class="user-email">${user.email}${user.department ? ' • ' + user.department : ''}</div>
+            </label>
+          `;
+          
+          const checkbox = div.querySelector('input');
+          checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              selectedUsers.add(user.id);
+            } else {
+              selectedUsers.delete(user.id);
+            }
+          });
+          
+          container.appendChild(div);
+        });
+        
+      } catch (error) {
+        console.error('Load users error:', error);
+        document.getElementById('usersLoading').textContent = 'Error loading users';
+      }
+    }
+    
+    // ========================================
+    // SELECT ALL
+    // ========================================
+    document.getElementById('selectAll')?.addEventListener('change', (e) => {
+      const checkboxes = document.querySelectorAll('#usersContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        cb.checked = e.target.checked;
+        if (e.target.checked) {
+          selectedUsers.add(cb.value);
+        } else {
+          selectedUsers.delete(cb.value);
+        }
+      });
+    });
+    
+    // ========================================
+    // FORM SUBMISSION
+    // ========================================
+    document.getElementById('assignForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (selectedUsers.size === 0) {
+        showStatus('Please select at least one user', 'error');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Assigning...';
+      
+      try {
+        const documentId = document.getElementById('document').value;
+        const dueDate = document.getElementById('dueDate').value;
+        const isMandatory = document.getElementById('isMandatory').checked;
+        const requiresSignature = document.getElementById('requiresSignature').checked;
+        const notes = document.getElementById('notes').value.trim();
+        
+        // Get document info
+        const { data: doc } = await supabase
+          .from('documents')
+          .select('slug, total_pages')
+          .eq('id', documentId)
+          .single();
+        
+        // Create assignments
+        const assignments = Array.from(selectedUsers).map(userId => ({
+          document_id: documentId,
+          document_slug: doc.slug,
+          assigned_to_user_id: userId,
+          due_date: dueDate || null,
+          is_mandatory: isMandatory,
+          requires_signature: requiresSignature,
+          total_pages: doc.total_pages,
+          notes: notes || null,
+          status: 'assigned',
+          assigned_at: new Date().toISOString()
+        }));
+        
+        const { error } = await supabase
+          .from('document_assignments')
+          .insert(assignments);
+        
+        if (error) throw error;
+        
+        showStatus(`✅ Document assigned to ${selectedUsers.size} user(s) successfully!`, 'success');
+        
+        // Reset form
+        document.getElementById('assignForm').reset();
+        selectedUsers.clear();
+        document.querySelectorAll('#usersContainer input[type="checkbox"]').forEach(cb => cb.checked = false);
+        
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          window.location = 'dashboard.html';
+        }, 2000);
+        
+      } catch (error) {
+        console.error('Assignment error:', error);
+        showStatus(`❌ Error: ${error.message}`, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Assign Document';
+      }
+    });
+    
+    // ========================================
+    // STATUS MESSAGES
+    // ========================================
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          status.className = 'status';
+        }, 5000);
+      }
+    }
+    
+    // ========================================
+    // INITIALIZE
+    // ========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDocuments();
+      loadUsers();
+    });
+  </script>
+</body>
+</html>

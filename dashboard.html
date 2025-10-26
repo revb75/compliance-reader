@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - ComplianceReader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    h1 {
+      font-size: 32px;
+      color: #1a1a1a;
+    }
+    
+    .back-link {
+      color: #667eea;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .section {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    h2 {
+      font-size: 24px;
+      color: #1a1a1a;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .btn:hover {
+      background: #5568d3;
+    }
+    
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+    
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    thead {
+      background: #f5f7fa;
+    }
+    
+    th {
+      text-align: left;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .doc-title {
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 0.25rem;
+    }
+    
+    .doc-meta {
+      font-size: 13px;
+      color: #666;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.3s;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .badge.warning {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .badge.danger {
+      background: #ffebee;
+      color: #c62828;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+    
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      margin-right: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+      body { padding: 1rem; }
+      .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      table { font-size: 13px; }
+      td, th { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>📊 Analytics Dashboard</h1>
+      </div>
+      <a href="index.html" class="back-link">← Back to Home</a>
+    </div>
+    
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalDocuments">-</div>
+        <div class="stat-label">Total Documents</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalAssignments">-</div>
+        <div class="stat-label">Assignments</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="completionRate">-</div>
+        <div class="stat-label">Completion Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="activeUsers">-</div>
+        <div class="stat-label">Active Users</div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-header">
+        <h2>Documents</h2>
+        <div>
+          <a href="upload.html" class="btn">+ Add Document</a>
+          <button class="btn btn-secondary" onclick="refreshData()">Refresh</button>
+        </div>
+      </div>
+      
+      <div id="documentsLoading" class="loading">Loading documents...</div>
+      <div id="documentsEmpty" class="empty-state" style="display:none;">
+        <div class="empty-state-icon">📚</div>
+        <p>No documents yet. Add your first compliance document!</p>
+        <a href="upload.html" class="btn" style="margin-top: 1rem;">+ Add Document</a>
+      </div>
+      
+      <table id="documentsTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Type</th>
+            <th>Assigned</th>
+            <th>Completed</th>
+            <th>Completion Rate</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="documentsBody"></tbody>
+      </table>
+    </div>
+    
+    <div class="section">
+      <div class="section-header">
+        <h2>Recent Activity</h2>
+      </div>
+      
+      <div id="activityLoading" class="loading">Loading activity...</div>
+      <div id="activityEmpty" class="empty-state" style="display:none;">
+        <div class="empty-state-icon">📊</div>
+        <p>No reading activity yet.</p>
+      </div>
+      
+      <table id="activityTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Document</th>
+            <th>Progress</th>
+            <th>Time Spent</th>
+            <th>Last Active</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="activityBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ========================================
+    // CONFIGURATION
+    // ========================================
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ========================================
+    // LOAD DASHBOARD DATA
+    // ========================================
+    async function loadDashboard() {
+      await Promise.all([
+        loadStats(),
+        loadDocuments(),
+        loadActivity()
+      ]);
+    }
+    
+    // ========================================
+    // LOAD STATISTICS
+    // ========================================
+    async function loadStats() {
+      try {
+        // Get document count
+        const { count: docCount } = await supabase
+          .from('documents')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active');
+        
+        document.getElementById('totalDocuments').textContent = docCount || 0;
+        
+        // Get assignment count
+        const { count: assignmentCount } = await supabase
+          .from('document_assignments')
+          .select('*', { count: 'exact', head: true });
+        
+        document.getElementById('totalAssignments').textContent = assignmentCount || 0;
+        
+        // Calculate completion rate
+        const { count: completedCount } = await supabase
+          .from('document_assignments')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'completed');
+        
+        const rate = assignmentCount > 0 
+          ? Math.round((completedCount / assignmentCount) * 100) 
+          : 0;
+        document.getElementById('completionRate').textContent = rate + '%';
+        
+        // Get active users (users with recent activity)
+        const { count: userCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_active', true);
+        
+        document.getElementById('activeUsers').textContent = userCount || 0;
+        
+      } catch (error) {
+        console.error('Stats load error:', error);
+      }
+    }
+    
+    // ========================================
+    // LOAD DOCUMENTS WITH STATS
+    // ========================================
+    async function loadDocuments() {
+      try {
+        const { data: documents, error } = await supabase
+          .from('documents')
+          .select(`
+            *,
+            assignments:document_assignments(count)
+          `)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const loading = document.getElementById('documentsLoading');
+        const empty = document.getElementById('documentsEmpty');
+        const table = document.getElementById('documentsTable');
+        const tbody = document.getElementById('documentsBody');
+        
+        loading.style.display = 'none';
+        
+        if (!documents || documents.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+        
+        table.style.display = 'table';
+        tbody.innerHTML = '';
+        
+        for (const doc of documents) {
+          // Get assignment stats for this document
+          const { data: stats } = await supabase
+            .from('document_assignments')
+            .select('status')
+            .eq('document_id', doc.id);
+          
+          const totalAssigned = stats?.length || 0;
+          const completed = stats?.filter(s => s.status === 'completed').length || 0;
+          const completionRate = totalAssigned > 0 
+            ? Math.round((completed / totalAssigned) * 100) 
+            : 0;
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>
+              <div class="doc-title">${doc.title}</div>
+              <div class="doc-meta">${doc.slug}</div>
+            </td>
+            <td>${formatType(doc.document_type)}</td>
+            <td>${totalAssigned}</td>
+            <td>${completed}</td>
+            <td>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${completionRate}%"></div>
+              </div>
+              <div style="font-size: 12px; margin-top: 4px; color: #666;">${completionRate}%</div>
+            </td>
+            <td>
+              <a href="reader.html?doc=${doc.slug}&user=demo" class="btn action-btn">View</a>
+              <a href="assign.html?doc=${doc.id}" class="btn btn-secondary action-btn">Assign</a>
+            </td>
+          `;
+          tbody.appendChild(row);
+        }
+        
+      } catch (error) {
+        console.error('Documents load error:', error);
+        document.getElementById('documentsLoading').textContent = 'Error loading documents';
+      }
+    }
+    
+    // ========================================
+    // LOAD RECENT ACTIVITY
+    // ========================================
+    async function loadActivity() {
+      try {
+        const { data: sessions, error } = await supabase
+          .from('document_sessions')
+          .select(`
+            *,
+            user:profiles(full_name, email),
+            document:documents(title)
+          `)
+          .order('last_active_at', { ascending: false })
+          .limit(20);
+        
+        if (error) throw error;
+        
+        const loading = document.getElementById('activityLoading');
+        const empty = document.getElementById('activityEmpty');
+        const table = document.getElementById('activityTable');
+        const tbody = document.getElementById('activityBody');
+        
+        loading.style.display = 'none';
+        
+        if (!sessions || sessions.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+        
+        table.style.display = 'table';
+        tbody.innerHTML = '';
+        
+        for (const session of sessions) {
+          const progress = Math.round(session.last_scroll_position * 100);
+          const timeMinutes = Math.floor(session.total_time_seconds / 60);
+          const timeSeconds = session.total_time_seconds % 60;
+          
+          const status = session.completed 
+            ? '<span class="badge success">Complete</span>'
+            : progress > 50
+              ? '<span class="badge warning">In Progress</span>'
+              : '<span class="badge">Started</span>';
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${session.user?.full_name || session.user?.email || session.user_id}</td>
+            <td>${session.document?.title || session.document_id}</td>
+            <td>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${progress}%"></div>
+              </div>
+              <div style="font-size: 12px; margin-top: 4px;">${progress}%</div>
+            </td>
+            <td>${timeMinutes}m ${timeSeconds}s</td>
+            <td>${formatDate(session.last_active_at)}</td>
+            <td>${status}</td>
+          `;
+          tbody.appendChild(row);
+        }
+        
+      } catch (error) {
+        console.error('Activity load error:', error);
+        document.getElementById('activityLoading').textContent = 'Error loading activity';
+      }
+    }
+    
+    // ========================================
+    // HELPERS
+    // ========================================
+    function formatType(type) {
+      const types = {
+        handbook: 'Handbook',
+        policy: 'Policy',
+        training: 'Training',
+        safety: 'Safety',
+        legal: 'Legal',
+        other: 'Other'
+      };
+      return types[type] || type;
+    }
+    
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays < 7) return `${diffDays}d ago`;
+      
+      return date.toLocaleDateString();
+    }
+    
+    function refreshData() {
+      location.reload();
+    }
+    
+    // ========================================
+    // INITIALIZE
+    // ========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDashboard();
+    });
+  </script>
+</body>
+</html>

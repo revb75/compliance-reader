@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Document - ComplianceReader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 32px;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: #666;
+      font-size: 15px;
+    }
+    
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 14px;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .help-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+    
+    .byos-info {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 4px;
+    }
+    
+    .byos-info h3 {
+      font-size: 16px;
+      color: #667eea;
+      margin-bottom: 0.5rem;
+    }
+    
+    .byos-info p {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.5;
+    }
+    
+    .byos-info ul {
+      margin-top: 0.5rem;
+      padding-left: 1.5rem;
+    }
+    
+    .byos-info li {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn:hover {
+      background: #5568d3;
+    }
+    
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+      margin-right: 1rem;
+    }
+    
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+    
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      display: block;
+    }
+    
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+      display: block;
+    }
+    
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+      display: block;
+    }
+    
+    .back-link {
+      display: inline-block;
+      color: #667eea;
+      text-decoration: none;
+      margin-bottom: 1rem;
+      font-size: 14px;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-link">← Back to Home</a>
+    
+    <div class="header">
+      <h1>📤 Upload Document</h1>
+      <p class="subtitle">Add a compliance document using BYOS (Bring Your Own Storage)</p>
+    </div>
+    
+    <div id="status" class="status"></div>
+    
+    <div class="byos-info">
+      <h3>🔒 BYOS Architecture</h3>
+      <p>Your documents stay in YOUR storage. We only track reading analytics.</p>
+      <ul>
+        <li>✅ Store documents in S3, Azure Blob, Google Drive, or SharePoint</li>
+        <li>✅ Provide us the public URL or signed URL</li>
+        <li>✅ We track who reads it, but never store the file</li>
+        <li>✅ Zero liability - you control security and compliance</li>
+      </ul>
+    </div>
+    
+    <div class="card">
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="title">Document Title *</label>
+          <input type="text" id="title" required placeholder="e.g., Employee Handbook 2025">
+          <p class="help-text">Clear, descriptive title for employees</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="slug">Slug *</label>
+          <input type="text" id="slug" required placeholder="e.g., employee-handbook-2025">
+          <p class="help-text">URL-friendly identifier (lowercase, hyphens only)</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="externalUrl">Document URL *</label>
+          <input type="url" id="externalUrl" required placeholder="https://your-storage.com/document.pdf">
+          <p class="help-text">Public URL or signed URL from your storage (S3, Azure, GDrive, etc.)</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" placeholder="Brief description of the document and why it's important"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="documentType">Document Type *</label>
+          <select id="documentType" required>
+            <option value="">Select type...</option>
+            <option value="handbook">Employee Handbook</option>
+            <option value="policy">Policy Document</option>
+            <option value="training">Training Material</option>
+            <option value="safety">Safety Procedures</option>
+            <option value="legal">Legal/Compliance</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="totalPages">Total Pages</label>
+          <input type="number" id="totalPages" min="1" placeholder="e.g., 45">
+          <p class="help-text">Optional - helps with progress tracking</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="category">Category</label>
+          <input type="text" id="category" placeholder="e.g., HR, Safety, Legal">
+        </div>
+        
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" onclick="window.location='index.html'">Cancel</button>
+          <button type="submit" class="btn" id="submitBtn">Add Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ========================================
+    // CONFIGURATION
+    // ========================================
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ========================================
+    // AUTO-GENERATE SLUG FROM TITLE
+    // ========================================
+    document.getElementById('title').addEventListener('input', (e) => {
+      const slug = e.target.value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      document.getElementById('slug').value = slug;
+    });
+    
+    // ========================================
+    // FORM SUBMISSION
+    // ========================================
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Adding...';
+      
+      showStatus('Adding document...', 'info');
+      
+      try {
+        // Get form values
+        const title = document.getElementById('title').value.trim();
+        const slug = document.getElementById('slug').value.trim();
+        const externalUrl = document.getElementById('externalUrl').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const documentType = document.getElementById('documentType').value;
+        const totalPages = document.getElementById('totalPages').value;
+        const category = document.getElementById('category').value.trim();
+        
+        // Validate URL
+        try {
+          new URL(externalUrl);
+        } catch {
+          throw new Error('Invalid URL format');
+        }
+        
+        // Insert document
+        const { data, error } = await supabase
+          .from('documents')
+          .insert({
+            slug: slug,
+            title: title,
+            description: description || null,
+            external_url: externalUrl,
+            document_type: documentType,
+            total_pages: totalPages ? parseInt(totalPages) : null,
+            category: category || null,
+            status: 'active',
+            published_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (error) throw error;
+        
+        showStatus(`✅ Document "${title}" added successfully!`, 'success');
+        
+        // Reset form
+        document.getElementById('uploadForm').reset();
+        
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          window.location = `dashboard.html`;
+        }, 2000);
+        
+      } catch (error) {
+        console.error('Upload error:', error);
+        showStatus(`❌ Error: ${error.message}`, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Document';
+      }
+    });
+    
+    // ========================================
+    // STATUS MESSAGES
+    // ========================================
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          status.className = 'status';
+        }, 5000);
+      }
+    }
+    
+    // ========================================
+    // URL VALIDATION HELPER
+    // ========================================
+    document.getElementById('externalUrl').addEventListener('blur', async (e) => {
+      const url = e.target.value.trim();
+      if (!url) return;
+      
+      try {
+        // Basic URL validation
+        new URL(url);
+        
+        // Optional: Try to fetch headers to verify it's accessible
+        // Note: This might fail due to CORS
+        showStatus('✅ URL format is valid', 'success');
+        
+      } catch {
+        showStatus('⚠️ URL format looks invalid', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
