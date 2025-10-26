@@ -3,561 +3,482 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - ComplianceReader</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Analytics Dashboard - ComplianceReader</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: #f5f7fa;
-      min-height: 100vh;
-      padding: 2rem;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
     .container {
       max-width: 1400px;
       margin: 0 auto;
-    }
-    
-    .header {
       background: white;
-      padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      padding: 40px;
+    }
+
+    .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
     }
-    
-    h1 {
+
+    .header h1 {
       font-size: 32px;
-      color: #1a1a1a;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    
+
+    .logo {
+      font-size: 36px;
+    }
+
     .back-link {
       color: #667eea;
       text-decoration: none;
-      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      transition: color 0.2s;
     }
-    
+
     .back-link:hover {
-      text-decoration: underline;
+      color: #764ba2;
     }
-    
-    .stats {
+
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      gap: 24px;
+      margin-bottom: 40px;
     }
-    
+
     .stat-card {
-      background: white;
-      padding: 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 28px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+      transition: transform 0.2s;
     }
-    
-    .stat-value {
-      font-size: 36px;
-      font-weight: 700;
-      color: #667eea;
-      margin-bottom: 0.25rem;
+
+    .stat-card:hover {
+      transform: translateY(-4px);
     }
-    
-    .stat-label {
+
+    .stat-card h3 {
       font-size: 14px;
-      color: #666;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-bottom: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
-    .section {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 2rem;
+
+    .stat-card .number {
+      font-size: 42px;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
-    
+
+    .stat-card .label {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 24px;
     }
-    
-    h2 {
+
+    .section h2 {
       font-size: 24px;
-      color: #1a1a1a;
+      color: #333;
     }
-    
-    .btn {
-      padding: 10px 20px;
+
+    .button {
       background: #667eea;
       color: white;
       border: none;
+      padding: 12px 24px;
       border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
+      transition: all 0.2s;
+      font-size: 14px;
     }
-    
-    .btn:hover {
-      background: #5568d3;
+
+    .button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
-    
-    .btn-secondary {
-      background: #e0e0e0;
+
+    .button.secondary {
+      background: #f0f0f0;
       color: #333;
     }
-    
-    .btn-secondary:hover {
-      background: #d0d0d0;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    
-    thead {
-      background: #f5f7fa;
-    }
-    
-    th {
-      text-align: left;
-      padding: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    
-    tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .doc-title {
-      font-weight: 600;
-      color: #1a1a1a;
-      margin-bottom: 0.25rem;
-    }
-    
-    .doc-meta {
-      font-size: 13px;
-      color: #666;
-    }
-    
-    .progress-bar {
-      height: 8px;
+
+    .button.secondary:hover {
       background: #e0e0e0;
+    }
+
+    .documents-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .document-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 4px solid #667eea;
+      transition: all 0.2s;
+    }
+
+    .document-card:hover {
+      background: #f0f2f5;
+      transform: translateX(4px);
+    }
+
+    .document-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .document-meta {
+      display: flex;
+      gap: 16px;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar {
+      background: #e0e0e0;
+      height: 8px;
       border-radius: 4px;
       overflow: hidden;
+      margin-bottom: 8px;
     }
-    
+
     .progress-fill {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
       height: 100%;
-      background: linear-gradient(90deg, #667eea, #764ba2);
       transition: width 0.3s;
     }
-    
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    
-    .badge.success {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-    
-    .badge.warning {
-      background: #fff3e0;
-      color: #e65100;
-    }
-    
-    .badge.danger {
-      background: #ffebee;
-      color: #c62828;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 3rem;
+
+    .progress-text {
+      font-size: 13px;
       color: #666;
+      display: flex;
+      justify-content: space-between;
     }
-    
-    .empty-state-icon {
-      font-size: 64px;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-    
+
     .loading {
       text-align: center;
-      padding: 2rem;
+      padding: 60px;
       color: #666;
+      font-size: 18px;
     }
-    
-    .action-btn {
-      padding: 6px 12px;
-      font-size: 12px;
-      margin-right: 0.5rem;
+
+    .error {
+      background: #fee;
+      border: 2px solid #fcc;
+      border-radius: 8px;
+      padding: 20px;
+      color: #c33;
+      margin: 20px 0;
     }
-    
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
     @media (max-width: 768px) {
-      body { padding: 1rem; }
-      .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-      table { font-size: 13px; }
-      td, th { padding: 8px; }
+      .container {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div>
-        <h1>📊 Analytics Dashboard</h1>
-      </div>
-      <a href="index.html" class="back-link">← Back to Home</a>
+      <h1>
+        <span class="logo">📊</span>
+        Analytics Dashboard
+      </h1>
+      <a href="index.html" class="back-link">
+        ← Back to Home
+      </a>
     </div>
-    
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-value" id="totalDocuments">-</div>
-        <div class="stat-label">Total Documents</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="totalAssignments">-</div>
-        <div class="stat-label">Assignments</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="completionRate">-</div>
-        <div class="stat-label">Completion Rate</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="activeUsers">-</div>
-        <div class="stat-label">Active Users</div>
-      </div>
+
+    <div id="loading" class="loading">
+      Loading dashboard data...
     </div>
-    
-    <div class="section">
-      <div class="section-header">
-        <h2>Documents</h2>
-        <div>
-          <a href="upload.html" class="btn">+ Add Document</a>
-          <button class="btn btn-secondary" onclick="refreshData()">Refresh</button>
+
+    <div id="error" style="display: none;"></div>
+
+    <div id="content" style="display: none;">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Documents</h3>
+          <div class="number" id="totalDocs">-</div>
+          <div class="label">Active compliance documents</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Assignments</h3>
+          <div class="number" id="totalAssignments">-</div>
+          <div class="label">Total document assignments</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Completion Rate</h3>
+          <div class="number" id="completionRate">-</div>
+          <div class="label">Overall compliance rate</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Active Users</h3>
+          <div class="number" id="activeUsers">-</div>
+          <div class="label">Employees in system</div>
         </div>
       </div>
-      
-      <div id="documentsLoading" class="loading">Loading documents...</div>
-      <div id="documentsEmpty" class="empty-state" style="display:none;">
-        <div class="empty-state-icon">📚</div>
-        <p>No documents yet. Add your first compliance document!</p>
-        <a href="upload.html" class="btn" style="margin-top: 1rem;">+ Add Document</a>
+
+      <!-- Documents Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2>Documents</h2>
+          <div style="display: flex; gap: 12px;">
+            <button class="button secondary" onclick="loadDashboard()">Refresh</button>
+            <button class="button" onclick="window.location.href='upload.html'">+ Add Document</button>
+          </div>
+        </div>
+        <div id="documentsList" class="documents-grid"></div>
       </div>
-      
-      <table id="documentsTable" style="display:none;">
-        <thead>
-          <tr>
-            <th>Document</th>
-            <th>Type</th>
-            <th>Assigned</th>
-            <th>Completed</th>
-            <th>Completion Rate</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="documentsBody"></tbody>
-      </table>
-    </div>
-    
-    <div class="section">
-      <div class="section-header">
-        <h2>Recent Activity</h2>
-      </div>
-      
-      <div id="activityLoading" class="loading">Loading activity...</div>
-      <div id="activityEmpty" class="empty-state" style="display:none;">
-        <div class="empty-state-icon">📊</div>
-        <p>No reading activity yet.</p>
-      </div>
-      
-      <table id="activityTable" style="display:none;">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Document</th>
-            <th>Progress</th>
-            <th>Time Spent</th>
-            <th>Last Active</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="activityBody"></tbody>
-      </table>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ========================================
+    // ============================================================================
     // CONFIGURATION
-    // ========================================
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // ========================================
+    // ============================================================================
+    // Replace with your Supabase credentials
+    const SUPABASE_URL = 'https://tbkdigmhjtnibqfgmptq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRia2RpZ21oanRuaWJxZmdtcHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkxNzQ4MTIsImV4cCI6MjA0NDc1MDgxMn0.bSPhsbg-tZP4gKwaSfV8Qvwmvs6mUOJE_5y_jfuLFh8';
+
+    // Initialize Supabase client
+    let supabase;
+    try {
+      const { createClient } = supabase;
+      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('✅ Supabase client initialized successfully');
+    } catch (err) {
+      console.error('❌ Failed to initialize Supabase:', err);
+      showError('Failed to connect to database. Please check your configuration.');
+    }
+
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+
+    function showError(message) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.innerHTML = `
+        <div class="error">
+          <strong>Error:</strong> ${message}
+        </div>
+      `;
+      errorDiv.style.display = 'block';
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+    }
+
+    // ============================================================================
     // LOAD DASHBOARD DATA
-    // ========================================
+    // ============================================================================
+
     async function loadDashboard() {
-      await Promise.all([
-        loadStats(),
-        loadDocuments(),
-        loadActivity()
-      ]);
-    }
-    
-    // ========================================
-    // LOAD STATISTICS
-    // ========================================
-    async function loadStats() {
       try {
-        // Get document count
-        const { count: docCount } = await supabase
+        console.log('📊 Loading dashboard data...');
+
+        // Get all documents
+        const { data: documents, error: docsError } = await supabase
           .from('documents')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'active');
-        
-        document.getElementById('totalDocuments').textContent = docCount || 0;
-        
-        // Get assignment count
-        const { count: assignmentCount } = await supabase
-          .from('document_assignments')
-          .select('*', { count: 'exact', head: true });
-        
-        document.getElementById('totalAssignments').textContent = assignmentCount || 0;
-        
-        // Calculate completion rate
-        const { count: completedCount } = await supabase
-          .from('document_assignments')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'completed');
-        
-        const rate = assignmentCount > 0 
-          ? Math.round((completedCount / assignmentCount) * 100) 
-          : 0;
-        document.getElementById('completionRate').textContent = rate + '%';
-        
-        // Get active users (users with recent activity)
-        const { count: userCount } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_active', true);
-        
-        document.getElementById('activeUsers').textContent = userCount || 0;
-        
-      } catch (error) {
-        console.error('Stats load error:', error);
-      }
-    }
-    
-    // ========================================
-    // LOAD DOCUMENTS WITH STATS
-    // ========================================
-    async function loadDocuments() {
-      try {
-        const { data: documents, error } = await supabase
-          .from('documents')
-          .select(`
-            *,
-            assignments:document_assignments(count)
-          `)
+          .select('*')
           .eq('status', 'active')
           .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        const loading = document.getElementById('documentsLoading');
-        const empty = document.getElementById('documentsEmpty');
-        const table = document.getElementById('documentsTable');
-        const tbody = document.getElementById('documentsBody');
-        
-        loading.style.display = 'none';
-        
-        if (!documents || documents.length === 0) {
-          empty.style.display = 'block';
-          return;
+
+        if (docsError) {
+          console.error('Documents error:', docsError);
+          throw docsError;
         }
-        
-        table.style.display = 'table';
-        tbody.innerHTML = '';
-        
-        for (const doc of documents) {
-          // Get assignment stats for this document
-          const { data: stats } = await supabase
-            .from('document_assignments')
-            .select('status')
-            .eq('document_id', doc.id);
-          
-          const totalAssigned = stats?.length || 0;
-          const completed = stats?.filter(s => s.status === 'completed').length || 0;
-          const completionRate = totalAssigned > 0 
-            ? Math.round((completed / totalAssigned) * 100) 
-            : 0;
-          
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>
-              <div class="doc-title">${doc.title}</div>
-              <div class="doc-meta">${doc.slug}</div>
-            </td>
-            <td>${formatType(doc.document_type)}</td>
-            <td>${totalAssigned}</td>
-            <td>${completed}</td>
-            <td>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${completionRate}%"></div>
-              </div>
-              <div style="font-size: 12px; margin-top: 4px; color: #666;">${completionRate}%</div>
-            </td>
-            <td>
-              <a href="reader.html?doc=${doc.slug}&user=demo" class="btn action-btn">View</a>
-              <a href="assign.html?doc=${doc.id}" class="btn btn-secondary action-btn">Assign</a>
-            </td>
-          `;
-          tbody.appendChild(row);
+
+        console.log(`✅ Loaded ${documents?.length || 0} documents`);
+
+        // Get all assignments
+        const { data: assignments, error: assignError } = await supabase
+          .from('document_assignments')
+          .select('*');
+
+        if (assignError) {
+          console.error('Assignments error:', assignError);
+          throw assignError;
         }
-        
+
+        console.log(`✅ Loaded ${assignments?.length || 0} assignments`);
+
+        // Get all profiles (users)
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('is_active', true);
+
+        if (profilesError) {
+          console.error('Profiles error:', profilesError);
+          throw profilesError;
+        }
+
+        console.log(`✅ Loaded ${profiles?.length || 0} profiles`);
+
+        // Calculate stats
+        const totalDocs = documents?.length || 0;
+        const totalAssignments = assignments?.length || 0;
+        const completedAssignments = assignments?.filter(a => a.status === 'completed').length || 0;
+        const completionRate = totalAssignments > 0 
+          ? Math.round((completedAssignments / totalAssignments) * 100) 
+          : 0;
+        const activeUsers = profiles?.length || 0;
+
+        // Update stats cards
+        document.getElementById('totalDocs').textContent = totalDocs;
+        document.getElementById('totalAssignments').textContent = totalAssignments;
+        document.getElementById('completionRate').textContent = completionRate + '%';
+        document.getElementById('activeUsers').textContent = activeUsers;
+
+        // Render documents list
+        renderDocuments(documents, assignments);
+
+        hideLoading();
+        console.log('✅ Dashboard loaded successfully');
+
       } catch (error) {
-        console.error('Documents load error:', error);
-        document.getElementById('documentsLoading').textContent = 'Error loading documents';
+        console.error('❌ Error loading dashboard:', error);
+        showError(error.message || 'Failed to load dashboard data');
       }
     }
-    
-    // ========================================
-    // LOAD RECENT ACTIVITY
-    // ========================================
-    async function loadActivity() {
-      try {
-        const { data: sessions, error } = await supabase
-          .from('document_sessions')
-          .select(`
-            *,
-            user:profiles(full_name, email),
-            document:documents(title)
-          `)
-          .order('last_active_at', { ascending: false })
-          .limit(20);
-        
-        if (error) throw error;
-        
-        const loading = document.getElementById('activityLoading');
-        const empty = document.getElementById('activityEmpty');
-        const table = document.getElementById('activityTable');
-        const tbody = document.getElementById('activityBody');
-        
-        loading.style.display = 'none';
-        
-        if (!sessions || sessions.length === 0) {
-          empty.style.display = 'block';
-          return;
-        }
-        
-        table.style.display = 'table';
-        tbody.innerHTML = '';
-        
-        for (const session of sessions) {
-          const progress = Math.round(session.last_scroll_position * 100);
-          const timeMinutes = Math.floor(session.total_time_seconds / 60);
-          const timeSeconds = session.total_time_seconds % 60;
-          
-          const status = session.completed 
-            ? '<span class="badge success">Complete</span>'
-            : progress > 50
-              ? '<span class="badge warning">In Progress</span>'
-              : '<span class="badge">Started</span>';
-          
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${session.user?.full_name || session.user?.email || session.user_id}</td>
-            <td>${session.document?.title || session.document_id}</td>
-            <td>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${progress}%"></div>
-              </div>
-              <div style="font-size: 12px; margin-top: 4px;">${progress}%</div>
-            </td>
-            <td>${timeMinutes}m ${timeSeconds}s</td>
-            <td>${formatDate(session.last_active_at)}</td>
-            <td>${status}</td>
-          `;
-          tbody.appendChild(row);
-        }
-        
-      } catch (error) {
-        console.error('Activity load error:', error);
-        document.getElementById('activityLoading').textContent = 'Error loading activity';
+
+    // ============================================================================
+    // RENDER DOCUMENTS
+    // ============================================================================
+
+    function renderDocuments(documents, assignments) {
+      const container = document.getElementById('documentsList');
+
+      if (!documents || documents.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📄</div>
+            <h3>No documents yet</h3>
+            <p>Upload your first compliance document to get started.</p>
+            <br>
+            <button class="button" onclick="window.location.href='upload.html'">
+              Upload Document
+            </button>
+          </div>
+        `;
+        return;
       }
+
+      container.innerHTML = documents.map(doc => {
+        // Get assignments for this document
+        const docAssignments = assignments.filter(a => a.document_id === doc.id);
+        const completed = docAssignments.filter(a => a.status === 'completed').length;
+        const total = docAssignments.length;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        return `
+          <div class="document-card">
+            <div class="document-title">${doc.title}</div>
+            <div class="document-meta">
+              <span>${doc.category || 'General'}</span>
+              <span>•</span>
+              <span>${doc.total_pages || 0} pages</span>
+              <span>•</span>
+              <span>Uploaded ${new Date(doc.created_at).toLocaleDateString()}</span>
+            </div>
+            ${total > 0 ? `
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${percentage}%"></div>
+              </div>
+              <div class="progress-text">
+                <span>${completed} of ${total} completed</span>
+                <span>${percentage}%</span>
+              </div>
+            ` : `
+              <div class="progress-text">
+                <span style="color: #999;">No assignments yet</span>
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
     }
-    
-    // ========================================
-    // HELPERS
-    // ========================================
-    function formatType(type) {
-      const types = {
-        handbook: 'Handbook',
-        policy: 'Policy',
-        training: 'Training',
-        safety: 'Safety',
-        legal: 'Legal',
-        other: 'Other'
-      };
-      return types[type] || type;
-    }
-    
-    function formatDate(dateString) {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.floor(diffMs / 60000);
-      
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      
-      const diffHours = Math.floor(diffMins / 60);
-      if (diffHours < 24) return `${diffHours}h ago`;
-      
-      const diffDays = Math.floor(diffHours / 24);
-      if (diffDays < 7) return `${diffDays}d ago`;
-      
-      return date.toLocaleDateString();
-    }
-    
-    function refreshData() {
-      location.reload();
-    }
-    
-    // ========================================
+
+    // ============================================================================
     // INITIALIZE
-    // ========================================
-    window.addEventListener('DOMContentLoaded', () => {
+    // ============================================================================
+
+    // Load dashboard when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Dashboard initializing...');
       loadDashboard();
     });
   </script>
