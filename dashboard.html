@@ -311,14 +311,22 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRia2RpZ21oanRuaWJxZmdtcHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkxNzQ4MTIsImV4cCI6MjA0NDc1MDgxMn0.bSPhsbg-tZP4gKwaSfV8Qvwmvs6mUOJE_5y_jfuLFh8';
 
     // Initialize Supabase client
-    let supabase;
-    try {
-      const { createClient } = supabase;
-      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log('✅ Supabase client initialized successfully');
-    } catch (err) {
-      console.error('❌ Failed to initialize Supabase:', err);
-      showError('Failed to connect to database. Please check your configuration.');
+    let supabaseClient;
+    
+    // Wait for Supabase library to load
+    function initSupabase() {
+      try {
+        if (typeof window.supabase === 'undefined') {
+          throw new Error('Supabase library not loaded');
+        }
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase client initialized successfully');
+        return true;
+      } catch (err) {
+        console.error('❌ Failed to initialize Supabase:', err);
+        showError('Failed to connect to database. Please check your configuration.');
+        return false;
+      }
     }
 
     // ============================================================================
@@ -349,8 +357,12 @@
       try {
         console.log('📊 Loading dashboard data...');
 
+        if (!supabaseClient) {
+          throw new Error('Supabase client not initialized');
+        }
+
         // Get all documents
-        const { data: documents, error: docsError } = await supabase
+        const { data: documents, error: docsError } = await supabaseClient
           .from('documents')
           .select('*')
           .eq('status', 'active')
@@ -364,7 +376,7 @@
         console.log(`✅ Loaded ${documents?.length || 0} documents`);
 
         // Get all assignments
-        const { data: assignments, error: assignError } = await supabase
+        const { data: assignments, error: assignError } = await supabaseClient
           .from('document_assignments')
           .select('*');
 
@@ -376,7 +388,7 @@
         console.log(`✅ Loaded ${assignments?.length || 0} assignments`);
 
         // Get all profiles (users)
-        const { data: profiles, error: profilesError } = await supabase
+        const { data: profiles, error: profilesError } = await supabaseClient
           .from('profiles')
           .select('*')
           .eq('is_active', true);
@@ -479,7 +491,14 @@
     // Load dashboard when page loads
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🚀 Dashboard initializing...');
-      loadDashboard();
+      
+      // Wait a moment for Supabase CDN to load, then initialize
+      setTimeout(() => {
+        if (initSupabase()) {
+          // Then load dashboard data
+          loadDashboard();
+        }
+      }, 100);
     });
   </script>
 </body>
